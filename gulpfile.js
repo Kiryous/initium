@@ -14,7 +14,7 @@ var gulp = require('gulp'),
     browserSync = require("browser-sync"),
     uglify = require('gulp-uglify'),
     concat = require('gulp-concat'),
-    pug = require('gulp-pug'),
+    swig = require('gulp-swig'),
     inline  = require('postcss-inline-svg'),
     cache = require('gulp-cached'),
     image = require('gulp-imagemin'),
@@ -43,27 +43,27 @@ var paths = {
 
 // Одноразовая сборка проекта
 gulp.task('default', function() {
-  gulp.start('pug', 'styles', 'scripts', 'cache', 'img');
+  gulp.start('templates', 'styles', 'scripts', 'cache', 'img');
 });
 
 // Запуск живой сборки
 gulp.task('live', function() {
-  gulp.start('pug', 'styles', 'scripts', 'img', 'cache', 'watch', 'server');
+  gulp.start('templates', 'styles', 'scripts', 'img', 'cache', 'watch', 'server');
 });
 
 // Запуск туннеля в интернет
 gulp.task('external-world', function() {
-  gulp.start('pug', 'styles', 'scripts', 'img', 'cache', 'watch', 'web-server');
+  gulp.start('templates', 'styles', 'scripts', 'img', 'cache', 'watch', 'web-server');
 });
 
 // Cборка с вотчем без браузерсинка
 gulp.task('no-server', function() {
-  gulp.start('pug', 'styles', 'scripts', 'img', 'cache', 'watch');
+  gulp.start('templates', 'styles', 'scripts', 'img', 'cache', 'watch');
 });
 
 // Федеральная служба по контролю за оборотом файлов
 gulp.task('watch', function() {
-  gulp.watch(paths.templates + '**/*.pug', ['pug']);
+  gulp.watch(paths.templates + '**/*.templates', ['templates']);
   gulp.watch(paths.styles + '**/*.pcss', ['styles', 'cache']);
   gulp.watch(paths.scripts + '*.js', ['scripts', 'cache']);
   gulp.watch(paths.img + '*.{png,jpg,gif,svg}', ['img']).on('change', function(event) {
@@ -75,10 +75,12 @@ gulp.task('watch', function() {
 });
 
 // Шаблонизация
-gulp.task('pug', function() {
-  gulp.src(paths.templates + '*.pug')
+gulp.task('templates', function() {
+  gulp.src(paths.templates + '*.html')
     .pipe(plumber({errorHandler: onError}))
-    .pipe(pug({pretty: true}))
+    .pipe(swig(
+      {defaults: { cache: false }}
+    ))
     .pipe(gulp.dest(paths.html))
     .pipe(reload({stream: true}));
 });
